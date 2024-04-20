@@ -5,7 +5,7 @@ const asyncHandler = require("express-async-handler");
 const jwt = require('jsonwebtoken');
 
 exports.get_posts_list = asyncHandler(async (req, res, next) => {
-  const posts = await Post.find({ 'published': true }).exec();
+  const posts = await Post.find({ 'published': true }).sort({ 'timestamp': -1 }).populate('author', 'firstname lastname').exec();
   if (!posts) {
     res.sendStatus(404);
   } else {
@@ -18,7 +18,7 @@ exports.get_post = asyncHandler(async (req, res, next) => {
     res.sendStatus(400);
   } else {
     const [post, comments] = [
-      await Post.findById(req.params.postid).exec(),
+      await Post.findById(req.params.postid).populate('author', 'firstname lastname').exec(),
       await Comment.find({ 'post': req.params.postid }).sort({ 'timestamp': -1 }).exec(),
     ]
     if (!post) {
@@ -37,7 +37,7 @@ exports.post_comment = asyncHandler(async (req, res, next) => {
   if (!req.params.postid || !isValidObjectId(req.params.postid) || !req.body.author || !req.body.content) {
     res.sendStatus(400);
   } else {
-    const post = await Post.findById(req.params.postid).exec();
+    const post = await Post.findById(req.params.postid).populate('author', 'firstname lastname').exec();
     if (!post) {
       res.sendStatus(404);
     } else {

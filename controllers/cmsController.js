@@ -31,7 +31,7 @@ exports.login = asyncHandler(async (req, res, next) => {
 });
 
 exports.get_posts_list = asyncHandler(async (req, res, next) => {
-  const posts = await Post.find().exec();
+  const posts = await Post.find().sort({ 'timestamp': -1 }).populate('author', 'firstname lastname').exec();
   if (!posts) {
     res.sendStatus(404);
   } else {
@@ -45,7 +45,7 @@ exports.get_post = asyncHandler(async (req, res, next) => {
     res.sendStatus(400);
   } else {
     const [post, comments] = [
-      await Post.findById(req.params.postid).exec(),
+      await Post.findById(req.params.postid).populate('author', 'firstname lastname').exec(),
       await Comment.find({ 'post': req.params.postid }).sort({ 'timestamp': -1 }).exec(),
     ]
     if (!post) {
