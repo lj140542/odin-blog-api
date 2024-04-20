@@ -4,6 +4,7 @@ let express = require('express');
 let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
+let cors = require('cors');
 
 let blogRouter = require('./routes/blogRoutes');
 let cmsRouter = require('./routes/cmsRoutes');
@@ -23,6 +24,7 @@ async function main() {
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -45,7 +47,7 @@ app.use(function (err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.json({ status: err.status, message: err.message });
 });
 
 module.exports = app;
