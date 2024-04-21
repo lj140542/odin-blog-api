@@ -4,6 +4,19 @@ const Comment = require('../models/comment');
 const asyncHandler = require("express-async-handler");
 const jwt = require('jsonwebtoken');
 
+exports.get_last_posts_list = asyncHandler(async (req, res, next) => {
+  if (!req.params.number || req.params.number <= 0) {
+    res.sendStatus(400);
+  } else {
+    const posts = await Post.find({ 'published': true }).sort({ 'timestamp': -1 }).limit(req.params.number).populate('author', 'firstname lastname').exec();
+    if (!posts) {
+      res.sendStatus(404);
+    } else {
+      res.json({ posts });
+    }
+  }
+});
+
 exports.get_posts_list = asyncHandler(async (req, res, next) => {
   const posts = await Post.find({ 'published': true }).sort({ 'timestamp': -1 }).populate('author', 'firstname lastname').exec();
   if (!posts) {
