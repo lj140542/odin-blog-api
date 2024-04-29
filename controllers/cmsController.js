@@ -5,6 +5,7 @@ const asyncHandler = require("express-async-handler");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { isValidObjectId } = require('mongoose');
+const dayjs = require("dayjs");
 
 exports.login = asyncHandler(async (req, res, next) => {
   // check the query args presence
@@ -22,12 +23,31 @@ exports.login = asyncHandler(async (req, res, next) => {
         res.sendStatus(401)
       } else {
         // send back the JWT
-        jwt.sign({ user }, process.env.SECRET, { expiresIn: '10m' }, (err, token) => {
-          res.json({ token });
+        const expirationDate = dayjs().add(10, "minutes").toDate(); // if updated, the 'expiresIn' value below must be updated
+        jwt.sign({ user }, process.env.SECRET, { expiresIn: "10m" }, (err, token) => {
+          res.cookie("token", JSON.stringify({ token: token }), {
+            secure: process.env.NODE_ENV !== "development",
+            httpOnly: true,
+            expires: expirationDate,
+            sameSite: "none"
+          });
+
+          res.json({ "token": expirationDate });
         });
       }
     }
   }
+});
+
+exports.logout = asyncHandler(async (req, res, next) => {
+  const expirationDate = dayjs().add(5, "seconds").toDate(); // if updated, the 'expiresIn' value below must be updated
+  res.cookie("token", JSON.stringify({ token: "none" }), {
+    secure: process.env.NODE_ENV !== "development",
+    httpOnly: true,
+    expires: expirationDate,
+  });
+
+  res.json({ "token": expirationDate });
 });
 
 exports.get_posts_list = asyncHandler(async (req, res, next) => {

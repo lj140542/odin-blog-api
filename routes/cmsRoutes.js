@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const cmsController = require('../controllers/cmsController');
 
 router.post('/login', cmsController.login);
+router.post('/logout', verifyToken, cmsController.logout);
 
 router.get('/posts', verifyToken, cmsController.get_posts_list);
 router.get('/posts/:postid', verifyToken, cmsController.get_post);
@@ -18,18 +19,17 @@ router.delete('/posts/:postid', verifyToken, cmsController.delete_post);
 router.delete('/posts/:postid/comment/:commentid', verifyToken, cmsController.delete_comment);
 
 function verifyToken(req, res, next) {
-  const bearerHeader = req.headers['authorization'];
+  const httpOnlyCookie = req.cookies.token;
+  const jsonCookie = httpOnlyCookie ? JSON.parse(httpOnlyCookie) : {};
 
-  // Check if bearer is undefined 
-  if (typeof bearerHeader !== 'undefined') {
-    const bearer = bearerHeader.split(' ');
-    const bearerToken = bearer[1];
+  if (jsonCookie.token) {
+    const cookieToken = jsonCookie.token;
     // verify the token
-    jwt.verify(bearerToken, process.env.SECRET, (err, authData) => {
+    jwt.verify(cookieToken, process.env.SECRET, (err, authData) => {
       if (err) {
         res.sendStatus(403);
       } else {
-        req.token = bearerToken;
+        req.token = cookieToken;
         req.authData = authData;
       }
     });
@@ -37,6 +37,25 @@ function verifyToken(req, res, next) {
   } else {
     res.sendStatus(403);
   }
+
+  // const bearerHeader = req.headers['authorization'];
+  // // Check if bearer is undefined 
+  // if (typeof bearerHeader !== 'undefined') {
+  //   const bearer = bearerHeader.split(' ');
+  //   const bearerToken = bearer[1];
+  //   // verify the token
+  //   jwt.verify(bearerToken, process.env.SECRET, (err, authData) => {
+  //     if (err) {
+  //       res.sendStatus(403);
+  //     } else {
+  //       req.token = bearerToken;
+  //       req.authData = authData;
+  //     }
+  //   });
+  //   next();
+  // } else {
+  //   res.sendStatus(403);
+  // }
 };
 
 function handleUnpublish(req, res, next) {
