@@ -25,7 +25,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: [process.env.WEBSITE_URL, process.env.CMS_URL],
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
